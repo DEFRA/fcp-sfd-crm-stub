@@ -23,7 +23,7 @@ services:
 
   ################################################################################
 
-  cdp-node-backend-no-db-template:
+  fcp-sfd-crm-stub:
     build:
       context: .
       target: development
