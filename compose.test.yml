@@ -1,0 +1,10 @@
+name: fcp-sfd-crm-stub-test
+
+services:
+  fcp-sfd-crm-stub:
+    build:
+      target: development
+    command: npm test
+    volumes:
+      - ./src:/home/node/src
+      - ./test:/home/node/test

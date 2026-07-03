@@ -18,20 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
-      - name: Test code and Create Test Coverage Reports
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: .nvmrc
-          cache: npm
+      - name: Create Coverage Directory
+        run: mkdir -p -m 777 coverage
 
-      - name: Security audit
-        run: npm run security-audit
-
-      - run: |
-          npm ci
-          npm run format:check
-          npm run lint
-          npm test
+      - name: Run Tests
+        run: npm run docker:test
 
       - name: Test Docker Image Build
         run: |
@@ -45,3 +36,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Snyk Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=medium
