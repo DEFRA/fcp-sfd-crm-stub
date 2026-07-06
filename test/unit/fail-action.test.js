@@ -1,4 +1,5 @@
-import { failAction } from './fail-action.js'
+import { describe, test, expect } from 'vitest'
+import { failAction } from '../../src/common/helpers/fail-action.js'
 
 describe('#fail-action', () => {
   test('Should throw expected error', () => {

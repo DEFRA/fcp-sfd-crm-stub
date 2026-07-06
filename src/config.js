@@ -87,6 +87,20 @@ export const config = convict({
       default: 'x-cdp-request-id',
       env: 'TRACING_HEADER'
     }
+  },
+  requestHistory: {
+    maxSize: {
+      doc: 'Maximum number of requests to retain in memory',
+      format: 'nat',
+      default: 1000,
+      env: 'REQUEST_HISTORY_MAX_SIZE'
+    },
+    windowMinutes: {
+      doc: 'Default time window in minutes for GET /stub/requests',
+      format: 'nat',
+      default: 10,
+      env: 'REQUEST_HISTORY_WINDOW_MINUTES'
+    }
   }
 })
 
