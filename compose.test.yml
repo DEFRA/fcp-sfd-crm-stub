@@ -6,5 +6,5 @@ services:
       target: development
     command: npm test
     volumes:
-      - ./src:/home/node/src
       - ./test:/home/node/test
+      - ./coverage:/home/node/coverage
