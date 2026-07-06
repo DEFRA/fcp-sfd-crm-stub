@@ -14,7 +14,7 @@
     "docker:dev": "docker compose up",
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
-    "docker:test": "npm run lint && mkdir -p -m 755 coverage 2>/dev/null || true && docker compose -p fcp-sfd-crm-stub-test down -v && docker compose -f compose.yml -f compose.test.yml -p fcp-sfd-crm-stub-test run --build --rm fcp-sfd-crm-stub",
+    "docker:test": "npm run lint && (mkdir -p coverage/.tmp 2>/dev/null || true) && docker compose -p fcp-sfd-crm-stub-test down -v && docker compose -f compose.yml -f compose.test.yml -p fcp-sfd-crm-stub-test run --build --rm fcp-sfd-crm-stub",
     "docker:test:watch": "docker compose -p fcp-sfd-crm-stub-test down -v && docker compose -f compose.yml -f compose.test.yml -f compose.test.watch.yml -p fcp-sfd-crm-stub-test run --build --rm fcp-sfd-crm-stub",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
