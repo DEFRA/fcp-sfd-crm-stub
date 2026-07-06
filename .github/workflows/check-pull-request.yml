@@ -16,34 +16,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
 
       - name: Create Coverage Directory
         run: mkdir -p -m 777 coverage
 
       - name: Run Tests
-        run: npm run docker:test
-
+        run: |
+          npm run docker:test
       - name: Test Docker Image Build
         run: |
           set +e
           docker build --no-cache --tag fcp-sfd-crm-stub .
           exit $?
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
       - name: SonarCloud Scan
         if: github.actor != 'dependabot[bot]'
-        uses: SonarSource/sonarqube-scan-action@v5.3.1
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Snyk Scan
-        if: secrets.SNYK_TOKEN != ''
         uses: snyk/actions/node@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
