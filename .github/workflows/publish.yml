@@ -27,11 +27,8 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v6
-
-      - name: Build and Publish
-        uses: DEFRA/cdp-build-action/build@main
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Create Coverage Directory
         run: mkdir -p -m 777 coverage
@@ -44,3 +41,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Build and Publish
+        uses: DEFRA/cdp-build-action/build@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
