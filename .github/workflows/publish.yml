@@ -4,9 +4,10 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 concurrency:
-  group: $${{ github.workflow }}
+  group: ${{ github.workflow }}
   cancel-in-progress: false
   queue: max
 
@@ -30,13 +31,18 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Coverage Directory
-        run: mkdir -p -m 777 coverage
+      - name: Create Test Coverage Reports
+        run: |
+          npm ci
 
       - name: Run Tests
-        run: npm run docker:test
+        run: |
+          mkdir -p coverage
+          chmod -R a+rw ./coverage
+          npm run docker:test
 
       - name: SonarCloud Scan
+        if: github.actor != 'dependabot[bot]'
         uses: SonarSource/sonarqube-scan-action@v5.3.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
