@@ -7,4 +7,6 @@ services:
     command: npm test
     volumes:
       - ./test:/home/node/test
+      - ./package.json:/home/node/package.json
+      - ./vitest.config.js:/home/node/vitest.config.js
       - ./coverage:/home/node/coverage
