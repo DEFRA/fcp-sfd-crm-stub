@@ -2,6 +2,8 @@ import Joi from 'joi'
 import { deterministicUuid } from '#/utils/deterministic-uuid.js'
 import { parseEqFilter, parseSelect, pickSelected } from '#/utils/odata.js'
 
+const HTTP_STATUS_OK = 200
+
 const querySchema = Joi.object({
   $select: Joi.string(),
   $filter: Joi.string()
@@ -65,7 +67,7 @@ export const contactsGet = {
   },
   handler: (request, h) => {
     const record = getContactRecord(request.query)
-    return h.response(asLookupResponse(record)).code(200)
+    return h.response(asLookupResponse(record)).code(HTTP_STATUS_OK)
   }
 }
 
@@ -79,7 +81,7 @@ export const accountsGet = {
   },
   handler: (request, h) => {
     const record = getAccountRecord(request.query)
-    return h.response(asLookupResponse(record)).code(200)
+    return h.response(asLookupResponse(record)).code(HTTP_STATUS_OK)
   }
 }
 
@@ -93,6 +95,6 @@ export const documentTypesGet = {
   },
   handler: (request, h) => {
     const record = getDocumentTypeRecord(request.query)
-    return h.response(asLookupResponse(record)).code(200)
+    return h.response(asLookupResponse(record)).code(HTTP_STATUS_OK)
   }
 }
