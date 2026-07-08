@@ -7,55 +7,40 @@ const HTTP_STATUS_OK = 200
 const querySchema = Joi.object({
   $select: Joi.string(),
   $filter: Joi.string()
+  // Allow unvalidated OData parameters ($orderby, $skip, etc.) to mimic real CRM behavior
 }).unknown(true)
 
 const asLookupResponse = (record) => ({
   value: record ? [record] : []
 })
 
-const getContactRecord = (query) => {
-  const crn = parseEqFilter(query.$filter, 'rpa_capcustomerid')
-  if (!crn) {
+const buildRecord = (query, filterField, recordBuilder) => {
+  const value = parseEqFilter(query.$filter, filterField)
+  if (!value) {
     return null
   }
 
   const selectedFields = parseSelect(query.$select)
-  const record = {
+  const record = recordBuilder(value)
+  return pickSelected(record, selectedFields)
+}
+
+const getContactRecord = (query) =>
+  buildRecord(query, 'rpa_capcustomerid', (crn) => ({
     contactid: deterministicUuid(`contact:${crn}`)
-  }
+  }))
 
-  return pickSelected(record, selectedFields)
-}
-
-const getAccountRecord = (query) => {
-  const sbi = parseEqFilter(query.$filter, 'rpa_sbinumber')
-  if (!sbi) {
-    return null
-  }
-
-  const selectedFields = parseSelect(query.$select)
-  const record = {
+const getAccountRecord = (query) =>
+  buildRecord(query, 'rpa_sbinumber', (sbi) => ({
     accountid: deterministicUuid(`account:${sbi}`)
-  }
+  }))
 
-  return pickSelected(record, selectedFields)
-}
-
-const getDocumentTypeRecord = (query) => {
-  const documentType = parseEqFilter(query.$filter, 'rpa_documenttype')
-  if (!documentType) {
-    return null
-  }
-
-  const selectedFields = parseSelect(query.$select)
-  const record = {
+const getDocumentTypeRecord = (query) =>
+  buildRecord(query, 'rpa_documenttype', (documentType) => ({
     _rpa_scheme_value: deterministicUuid(`scheme:${documentType}`),
     _rpa_subject_value: deterministicUuid(`subject:${documentType}`),
     rpa_documenttypesid: deterministicUuid(`document-type:${documentType}`)
-  }
-
-  return pickSelected(record, selectedFields)
-}
+  }))
 
 export const contactsGet = {
   method: 'GET',
