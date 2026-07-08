@@ -1,5 +1,3 @@
-const escapedSingleQuote = /''/g
-
 export function parseSelect(select) {
   if (!select || typeof select !== 'string') {
     return null
@@ -29,14 +27,12 @@ export function parseEqFilter(filter, fieldName) {
   }
 
   const escapedFieldName = fieldName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const pattern = new RegExp(
-    `^\\s*${escapedFieldName}\\s+eq\\s+'((?:''|[^'])*)'\\s*$`
-  )
-  const match = filter.match(pattern)
+  const pattern = new RegExp('^\\s*' + escapedFieldName + '\\s+eq\\s+\'((?:\'\'|[^\'])*)\'^\\s*$')
+  const match = pattern.exec(filter)
 
   if (!match) {
     return null
   }
 
-  return match[1].replace(escapedSingleQuote, "'")
+  return match[1].replaceAll("''", "'")
 }
