@@ -51,6 +51,16 @@ describe('#odata', () => {
       expect(result).toBe("it's a value")
     })
 
+    test('handles multiple escaped single quotes in value', () => {
+      const result = parseEqFilter("fieldname eq 'a''b''c'", 'fieldname')
+      expect(result).toBe("a'b'c")
+    })
+
+    test('returns empty string when filter value is empty', () => {
+      const result = parseEqFilter("fieldname eq ''", 'fieldname')
+      expect(result).toBe('')
+    })
+
     test('returns null when fieldname does not match', () => {
       const result = parseEqFilter("rpa_capcustomerid eq '12345'", 'different_field')
       expect(result).toBeNull()

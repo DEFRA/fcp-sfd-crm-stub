@@ -16,7 +16,7 @@ const asLookupResponse = (record) => ({
 
 const buildRecord = (query, filterField, recordBuilder) => {
   const value = parseEqFilter(query.$filter, filterField)
-  if (!value) {
+  if (value === null) {
     return null
   }
 

@@ -71,6 +71,20 @@ describe('#crm-lookups', () => {
     })
   })
 
+  test('treats empty string filter value as valid', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: "/api/data/v9.2/rpa_documenttypeses?$select=rpa_documenttypesid&$filter=rpa_documenttype eq ''"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const payload = JSON.parse(response.payload)
+    expect(payload.value).toHaveLength(1)
+    expect(payload.value[0]).toEqual({
+      rpa_documenttypesid: expect.any(String)
+    })
+  })
+
   test('returns empty value array for malformed filter', async () => {
     const response = await server.inject({
       method: 'GET',

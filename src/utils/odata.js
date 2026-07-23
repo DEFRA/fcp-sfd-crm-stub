@@ -36,5 +36,5 @@ export function parseEqFilter(filter, fieldName) {
     return null
   }
 
-  return match[1].replace("''", "'")
+  return match[1].replaceAll("''", "'")
 }
