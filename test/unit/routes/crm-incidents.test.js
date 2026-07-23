@@ -74,6 +74,69 @@ describe('#crm-incidents', () => {
     ])
   })
 
+  test('does not include expanded online submissions when $expand is not provided', async () => {
+    const createResponse = await server.inject({
+      method: 'POST',
+      url: '/api/data/v9.2/incidents',
+      payload: {
+        title: 'No expand request',
+        description: 'No expand response expected',
+        incident_rpa_onlinesubmissions: [
+          {
+            subject: 'Submission without expand',
+            rpa_onlinesubmissionid: 'ols-no-expand'
+          }
+        ]
+      }
+    })
+
+    const incidentid = JSON.parse(createResponse.payload).incidentid
+
+    const getResponse = await server.inject({
+      method: 'GET',
+      url: `/api/data/v9.2/incidents(${incidentid})?$select=incidentid,title`
+    })
+
+    expect(getResponse.statusCode).toBe(200)
+    const payload = JSON.parse(getResponse.payload)
+    expect(payload).toEqual({
+      incidentid,
+      title: 'No expand request'
+    })
+    expect(payload.incident_rpa_onlinesubmissions).toBeUndefined()
+  })
+
+  test('ignores invalid $expand value and returns top-level fields only', async () => {
+    const createResponse = await server.inject({
+      method: 'POST',
+      url: '/api/data/v9.2/incidents',
+      payload: {
+        title: 'Invalid expand request',
+        incident_rpa_onlinesubmissions: [
+          {
+            subject: 'Submission for invalid expand',
+            rpa_onlinesubmissionid: 'ols-invalid-expand'
+          }
+        ]
+      }
+    })
+
+    const incidentid = JSON.parse(createResponse.payload).incidentid
+
+    const getResponse = await server.inject({
+      method: 'GET',
+      url: `/api/data/v9.2/incidents(${incidentid})?$select=incidentid,title&$expand=bad_expand($select=x)`
+    })
+
+    expect(getResponse.statusCode).toBe(200)
+    const payload = JSON.parse(getResponse.payload)
+    expect(payload).toEqual({
+      incidentid,
+      title: 'Invalid expand request'
+    })
+    expect(payload.incident_rpa_onlinesubmissions).toBeUndefined()
+  })
+
   test('generates missing online submission ids during creation and returns them via expand', async () => {
     const createResponse = await server.inject({
       method: 'POST',
@@ -101,6 +164,33 @@ describe('#crm-incidents', () => {
     expect(payload.incident_rpa_onlinesubmissions[0]).toEqual({
       rpa_onlinesubmissionid: expect.any(String)
     })
+  })
+
+  test('uses default title/description and supports expand without nested $select', async () => {
+    const createResponse = await server.inject({
+      method: 'POST',
+      url: '/api/data/v9.2/incidents',
+      payload: {
+        incident_rpa_onlinesubmissions: [
+          {}
+        ]
+      }
+    })
+
+    const incidentid = JSON.parse(createResponse.payload).incidentid
+
+    const getResponse = await server.inject({
+      method: 'GET',
+      url: `/api/data/v9.2/incidents(${incidentid})?$expand=incident_rpa_onlinesubmissions`
+    })
+
+    expect(getResponse.statusCode).toBe(200)
+    const payload = JSON.parse(getResponse.payload)
+    expect(payload.incidentid).toBe(incidentid)
+    expect(payload.title).toBe('')
+    expect(payload.description).toBe('')
+    expect(payload.incident_rpa_onlinesubmissions).toHaveLength(1)
+    expect(payload.incident_rpa_onlinesubmissions[0].rpa_onlinesubmissionid).toEqual(expect.any(String))
   })
 
   test('returns 404 when incident does not exist', async () => {

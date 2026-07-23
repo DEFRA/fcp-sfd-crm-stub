@@ -22,14 +22,22 @@ const parseExpand = (expand) => {
     return null
   }
 
-  const pattern = /^\s*incident_rpa_onlinesubmissions(?:\(\s*\$select\s*=\s*([^)]*?)\s*\))?\s*$/
-  const match = pattern.exec(expand)
+  const normalized = expand.replace(/\s+/g, '')
 
-  if (!match) {
+  if (normalized === ONLINE_SUBMISSIONS_EXPAND) {
+    return {
+      field: ONLINE_SUBMISSIONS_EXPAND,
+      selectedFields: null
+    }
+  }
+
+  const prefix = `${ONLINE_SUBMISSIONS_EXPAND}($select=`
+  if (!normalized.startsWith(prefix) || !normalized.endsWith(')')) {
     return null
   }
 
-  const selectedFields = parseSelect(match[1])
+  const selectedFieldsRaw = normalized.slice(prefix.length, -1)
+  const selectedFields = parseSelect(selectedFieldsRaw)
 
   return {
     field: ONLINE_SUBMISSIONS_EXPAND,
