@@ -4,6 +4,7 @@ import {
   contactsGet,
   documentTypesGet
 } from '#/routes/crm-lookups.js'
+import { incidentsGet, incidentsPost } from '#/routes/crm-incidents.js'
 
 export const router = {
   plugin: {
@@ -13,7 +14,9 @@ export const router = {
         health,
         contactsGet,
         accountsGet,
-        documentTypesGet
+        documentTypesGet,
+        incidentsPost,
+        incidentsGet
       ])
     }
   }
