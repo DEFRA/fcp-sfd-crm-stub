@@ -5,6 +5,7 @@ import { createIncident, getIncidentById } from '#/store/incidents.js'
 import { record } from '#/store/request-history.js'
 
 const HTTP_STATUS_OK = 200
+const HTTP_STATUS_NOT_FOUND = 404
 const ONLINE_SUBMISSIONS_EXPAND = 'incident_rpa_onlinesubmissions'
 
 const postPayloadSchema = Joi.object({
@@ -97,7 +98,7 @@ export const incidentsGet = {
     const incident = getIncidentById(request.params.incidentid)
 
     if (!incident) {
-      recordRequest(request, 404)
+      recordRequest(request, HTTP_STATUS_NOT_FOUND)
       throw Boom.notFound('Incident not found')
     }
 

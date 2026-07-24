@@ -11,8 +11,8 @@ const querySchema = Joi.object({
   // Allow unvalidated OData parameters ($orderby, $skip, etc.) to mimic real CRM behavior
 }).unknown(true)
 
-const asLookupResponse = (record) => ({
-  value: record ? [record] : []
+const asLookupResponse = (lookupRecord) => ({
+  value: lookupRecord ? [lookupRecord] : []
 })
 
 const buildRecord = (query, filterField, recordBuilder) => {
