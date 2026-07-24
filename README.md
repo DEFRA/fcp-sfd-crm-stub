@@ -1,200 +1,192 @@
 # fcp-sfd-crm-stub
 
-Core delivery platform Node.js Backend Template.
+Lightweight CRM stub service for SFD automated testing.
 
-- [Requirements](#requirements)
-  - [Node.js](#nodejs)
-- [Local development](#local-development)
-  - [Setup](#setup)
-  - [Development](#development)
-  - [Testing](#testing)
-  - [Production](#production)
-  - [Npm scripts](#npm-scripts)
-  - [Update dependencies](#update-dependencies)
-  - [Formatting](#formatting)
-    - [Windows prettier issue](#windows-prettier-issue)
-- [API endpoints](#api-endpoints)
-- [Development helpers](#development-helpers)
-  - [Proxy](#proxy)
-- [Docker](#docker)
-  - [Development image](#development-image)
-  - [Production image](#production-image)
-  - [Docker Compose](#docker-compose)
-  - [Dependabot](#dependabot)
-  - [SonarCloud](#sonarcloud)
-- [Licence](#licence)
-  - [About the licence](#about-the-licence)
+This service mimics the subset of Dynamics 365 CRM endpoints used by `fcp-sfd-crm` and provides admin endpoints for asserting and resetting received request history between tests.
 
-## Requirements
+## Prerequisites
 
-### Node.js
+- Docker
+- Docker Compose
+- Node.js v24+ (for local non-docker runs)
 
-Please install [Node.js](http://nodejs.org/) `>= v24` and [npm](https://nodejs.org/) `>= v11`. You will find it
-easier to use the Node Version Manager [nvm](https://github.com/creationix/nvm)
+## Run and Test
 
-To use the correct version of Node.js for this application, via nvm:
+Run locally in Docker:
 
 ```bash
-cd fcp-sfd-crm-stub
-nvm use
+npm run docker:dev
 ```
 
-## Local development
-
-### Setup
-
-Install application dependencies:
+Run full lint + tests in Docker (CI-equivalent):
 
 ```bash
-npm install
+npm run docker:test
 ```
 
-### Git hooks
-
-Install git hooks (optional)
+Run tests in watch mode:
 
 ```bash
-npm run git:hooks
+npm run docker:test:watch
 ```
 
-### Development
+## API Endpoints
 
-To run the application in `development` mode run:
+### Health
+
+| Method | Endpoint  | Description |
+|--------|-----------|-------------|
+| `GET`  | `/health` | Health check |
+
+Response:
+
+```json
+{ "message": "success" }
+```
+
+### CRM Lookup Endpoints
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `GET` | `/api/data/v9.2/contacts` | Contact lookup by CRN |
+| `GET` | `/api/data/v9.2/accounts` | Account lookup by SBI |
+| `GET` | `/api/data/v9.2/rpa_documenttypeses` | Document type metadata lookup |
+
+#### Supported query parameters
+
+- `$filter` with `eq` only
+- `$select` comma-separated field projection
+
+Supported filter forms:
+
+- `rpa_capcustomerid eq '...'
+- `rpa_sbinumber eq '...'
+- `rpa_documenttype eq '...'`
+
+Escaped single quotes are supported in filter values (`''` -> `'`).
+
+Lookup responses use an OData-like envelope:
+
+```json
+{ "value": [ ... ] }
+```
+
+Invalid/unsupported filters return:
+
+```json
+{ "value": [] }
+```
+
+#### Examples
 
 ```bash
-npm run dev
+curl -s "http://localhost:3001/api/data/v9.2/contacts?\$select=contactid&\$filter=rpa_capcustomerid%20eq%20%272024001%27"
+
+curl -s "http://localhost:3001/api/data/v9.2/accounts?\$select=accountid&\$filter=rpa_sbinumber%20eq%20%27123456789%27"
+
+curl -s "http://localhost:3001/api/data/v9.2/rpa_documenttypeses?\$select=_rpa_scheme_value,_rpa_subject_value,rpa_documenttypesid&\$filter=rpa_documenttype%20eq%20%27Common%20Licence%27"
 ```
 
-### Testing
+### CRM Incident Endpoints
 
-To test the application run:
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `POST` | `/api/data/v9.2/incidents` | Create an incident record |
+| `GET` | `/api/data/v9.2/incidents({incidentid})` | Retrieve incident details |
+
+Create response:
+
+```json
+{ "incidentid": "<uuid>" }
+```
+
+Supported query parameters on GET:
+
+- `$select` for top-level fields (`incidentid`, `title`, `description`)
+- `$expand` for online submissions
+
+Supported expand forms:
+
+- `incident_rpa_onlinesubmissions`
+- `incident_rpa_onlinesubmissions($select=rpa_onlinesubmissionid)`
+
+Unknown incident id returns `404` with message `Incident not found`.
+
+#### Examples
+
+Create:
 
 ```bash
-npm run test
+curl -s -X POST "http://localhost:3001/api/data/v9.2/incidents" \
+  -H "Authorization: Bearer test-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Document Upload - SBI 123456789",
+    "description": "Online submission with attached documents",
+    "incident_rpa_onlinesubmissions": [{
+      "subject": "Document Upload",
+      "description": "Test submission"
+    }]
+  }'
 ```
 
-### Production
-
-To mimic the application running in `production` mode locally run:
+Retrieve with select + expand:
 
 ```bash
-npm start
+curl -s "http://localhost:3001/api/data/v9.2/incidents(<incidentid>)?\$select=incidentid,title&\$expand=incident_rpa_onlinesubmissions(\$select=rpa_onlinesubmissionid)"
 ```
 
-### Npm scripts
+### Stub Admin Endpoints
 
-All available Npm scripts can be seen in [package.json](./package.json).
-To view them in your command line run:
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `GET` | `/stub/requests` | Return request history |
+| `POST` | `/stub/reset` | Clear request history |
+
+History entry schema:
+
+```json
+{
+  "method": "GET|POST",
+  "endpoint": "/api/...",
+  "timestamp": "ISO-8601",
+  "requestBody": {},
+  "responseStatus": 200
+}
+```
+
+Reset returns `204 No Content`.
+
+#### Examples
 
 ```bash
-npm run
+curl -s "http://localhost:3001/stub/requests" | jq
+curl -i -X POST "http://localhost:3001/stub/reset"
+curl -s "http://localhost:3001/stub/requests" | jq
 ```
 
-### Update dependencies
+## Retention and Concurrency Settings
 
-To update dependencies use [npm-check-updates](https://github.com/raineorshine/npm-check-updates):
+The service uses in-memory stores for request history and incidents.
 
-> The following script is a good start. Check out all the options on
-> the [npm-check-updates](https://github.com/raineorshine/npm-check-updates)
+### Request history
 
-```bash
-ncu --interactive --format group
-```
+- `REQUEST_HISTORY_MAX_SIZE` (default: `1000`)
+- `REQUEST_HISTORY_WINDOW_MINUTES` (default: `10`)
 
-### Formatting
+When history exceeds max size, oldest entries are evicted first.
 
-#### Windows prettier issue
+### Incident store
 
-If you are having issues with formatting of line breaks on Windows update your global git config by running:
+- `INCIDENT_STORE_MAX_SIZE` (default: `1000`)
+- `INCIDENT_STORE_MAX_AGE_MINUTES` (default: `0`)
 
-```bash
-git config --global core.autocrlf false
-```
+Behavior:
 
-## API endpoints
+- Max-size eviction is FIFO (oldest incidents removed first).
+- Age-based expiry is disabled when `INCIDENT_STORE_MAX_AGE_MINUTES=0`.
+- When enabled (`>0`), incidents older than the configured age are purged on create/get operations.
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
+## License
 
-## Development helpers
-
-### Proxy
-
-We are using forward-proxy which is set up by default. To make use of this: `import { fetch } from 'undici'` then
-because of the `setGlobalDispatcher(new ProxyAgent(proxyUrl))` calls will use the ProxyAgent Dispatcher
-
-If you are not using Wreck, Axios or Undici or a similar http that uses `Request`. Then you may have to provide the
-proxy dispatcher:
-
-To add the dispatcher to your own client:
-
-```javascript
-import { ProxyAgent } from 'undici'
-
-return await fetch(url, {
-  dispatcher: new ProxyAgent({
-    uri: proxyUrl,
-    keepAliveTimeout: 10,
-    keepAliveMaxTimeout: 10
-  })
-})
-```
-
-## Docker
-
-Build:
-
-```bash
-docker build --no-cache --tag fcp-sfd-crm-stub .
-```
-
-Run:
-
-```bash
-docker run -e PORT=3001 -p 3001:3001 fcp-sfd-crm-stub
-```
-
-### Docker Compose
-
-A local environment with:
-
-- Floci for AWS services (S3, SQS, SNS etc)
-- Redis
-- This service.
-- A commented out frontend example.
-
-```bash
-docker compose up --build -d
-```
-
-Mock AWS resources can be created when Floci starts up by editing the scripts in `./compose/floci/start.d/`.
-
-### Dependabot
-
-We have added an example dependabot configuration file to the repository. You can enable it by renaming
-the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github/dependabot.yml`
-
-### SonarCloud
-
-Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties)
-
-## Licence
-
-THIS INFORMATION IS LICENSED UNDER THE CONDITIONS OF THE OPEN GOVERNMENT LICENCE found at:
-
-<http://www.nationalarchives.gov.uk/doc/open-government-licence/version/3>
-
-The following attribution statement MUST be cited in your products and applications when using this information.
-
-> Contains public sector information licensed under the Open Government license v3
-
-### About the licence
-
-The Open Government Licence (OGL) was developed by the Controller of Her Majesty's Stationery Office (HMSO) to enable
-information providers in the public sector to license the use and re-use of their information under a common open
-licence.
-
-It is designed to encourage use and re-use of information freely and flexibly, with only a few conditions.
+This project is licensed under the Open Government Licence v3.
