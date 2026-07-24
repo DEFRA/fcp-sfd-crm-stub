@@ -2,6 +2,7 @@ import Boom from '@hapi/boom'
 import Joi from 'joi'
 import { parseSelect, pickSelected } from '#/utils/odata.js'
 import { createIncident, getIncidentById } from '#/store/incidents.js'
+import { record } from '#/store/request-history.js'
 
 const HTTP_STATUS_OK = 200
 const ONLINE_SUBMISSIONS_EXPAND = 'incident_rpa_onlinesubmissions'
@@ -75,7 +76,9 @@ export const incidentsPost = {
   },
   handler: (request, h) => {
     const incident = createIncident(request.payload)
-    return h.response({ incidentid: incident.incidentid }).code(HTTP_STATUS_OK)
+    const response = h.response({ incidentid: incident.incidentid }).code(HTTP_STATUS_OK)
+    recordRequest(request, HTTP_STATUS_OK)
+    return response
   }
 }
 
@@ -94,9 +97,21 @@ export const incidentsGet = {
     const incident = getIncidentById(request.params.incidentid)
 
     if (!incident) {
+      recordRequest(request, 404)
       throw Boom.notFound('Incident not found')
     }
 
-    return h.response(buildIncidentResponse(incident, request.query)).code(HTTP_STATUS_OK)
+    const response = h.response(buildIncidentResponse(incident, request.query)).code(HTTP_STATUS_OK)
+    recordRequest(request, HTTP_STATUS_OK)
+    return response
   }
+}
+
+function recordRequest(request, responseStatus) {
+  record({
+    method: request.method.toUpperCase(),
+    endpoint: request.path,
+    requestBody: request.payload ?? null,
+    responseStatus
+  })
 }
