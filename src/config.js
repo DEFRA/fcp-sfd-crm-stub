@@ -101,6 +101,20 @@ export const config = convict({
       default: 10,
       env: 'REQUEST_HISTORY_WINDOW_MINUTES'
     }
+  },
+  incidentStore: {
+    maxSize: {
+      doc: 'Maximum number of incidents retained in memory',
+      format: 'nat',
+      default: 1000,
+      env: 'INCIDENT_STORE_MAX_SIZE'
+    },
+    maxAgeMinutes: {
+      doc: 'Maximum age in minutes for incidents retained in memory (0 disables age-based expiry)',
+      format: 'nat',
+      default: 0,
+      env: 'INCIDENT_STORE_MAX_AGE_MINUTES'
+    }
   }
 })
 
