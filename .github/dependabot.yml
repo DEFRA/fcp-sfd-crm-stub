@@ -1,55 +1,32 @@
 version: 2
 
 updates:
-  # Update npm packages
-  - package-ecosystem: npm
-    directory: /
-    open-pull-requests-limit: 10
-
-    # Group packages into shared PR
-    groups:
-      lint:
-        patterns:
-          - 'prettier'
-          - 'stylelint'
-          - 'stylelint-*'
-
-      logging:
-        patterns:
-          - '*-pino'
-          - '*-pino-format'
-          - 'pino'
-          - 'pino-*'
-
-      tools:
-        patterns:
-          - 'husky'
-          - 'vitest'
-          - 'nodemon'
-          - 'npm-run-all'
-
-    ignore:
-      - dependency-name: 'eslint-*'
-      - dependency-name: 'eslint'
-
-    # Schedule run every Monday, local time
-    schedule:
-      interval: weekly
-      time: '10:30'
-      timezone: 'Europe/London'
-
-    versioning-strategy: increase
-
-    allow:
-      # Include direct package.json updates
-      - dependency-type: direct
-
-  # Update GitHub Actions
-  - package-ecosystem: github-actions
-    directory: /
-
-    # Schedule run every Monday, local time
-    schedule:
-      interval: weekly
-      time: '10:30'
-      timezone: 'Europe/London'
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: weekly
+  commit-message:
+    prefix: chore
+  groups:
+    npm-production:
+      applies-to: version-updates
+      dependency-type: production
+      patterns:
+      - "*"
+    vitest:
+      applies-to: version-updates
+      patterns:
+      - "vitest"
+      - "@vitest/*"
+    linting:
+      applies-to: version-updates
+      patterns:
+      - "eslint"
+      - "eslint-*"
+      - "neostandard"
+- package-ecosystem: github-actions
+  directory: "/"
+  schedule:
+    interval: weekly
+  commit-message:
+    prefix: chore
