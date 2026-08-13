@@ -44,6 +44,25 @@ Response:
 { "message": "success" }
 ```
 
+### OAuth Token Endpoint
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| `POST` | `/oauth2/v2.0/token` | Return a stub access token for the client credentials flow |
+
+The endpoint accepts an `application/x-www-form-urlencoded` request containing
+`client_id`, `client_secret`, `grant_type=client_credentials` and `scope`.
+
+Response:
+
+```json
+{
+  "access_token": "stub-access-token",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
 ### CRM Lookup Endpoints
 
 | Method | Endpoint | Purpose |
