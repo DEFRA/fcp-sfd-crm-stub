@@ -5,6 +5,7 @@ import {
   documentTypesGet
 } from '#/routes/crm-lookups.js'
 import { incidentsGet, incidentsPost } from '#/routes/crm-incidents.js'
+import { oauthTokenPost } from '#/routes/oauth-token.js'
 import { requestsGet, resetPost } from '#/routes/stub-admin.js'
 
 export const router = {
@@ -18,6 +19,7 @@ export const router = {
         documentTypesGet,
         incidentsPost,
         incidentsGet,
+        oauthTokenPost,
         requestsGet,
         resetPost
       ])
