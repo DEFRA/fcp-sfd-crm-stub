@@ -2,7 +2,7 @@ import Boom from '@hapi/boom'
 import Joi from 'joi'
 import { parseSelect, pickSelected } from '#/utils/odata.js'
 import { createIncident, getIncidentById } from '#/store/incidents.js'
-import { record } from '#/store/request-history.js'
+import { recordRequest } from '#/common/helpers/record-request.js'
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
@@ -106,13 +106,4 @@ export const incidentsGet = {
     recordRequest(request, HTTP_STATUS_OK)
     return response
   }
-}
-
-function recordRequest(request, responseStatus) {
-  record({
-    method: request.method.toUpperCase(),
-    endpoint: request.path,
-    requestBody: request.payload ?? null,
-    responseStatus
-  })
 }
