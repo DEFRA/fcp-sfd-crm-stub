@@ -84,6 +84,10 @@ Supported filter forms:
 
 Escaped single quotes are supported in filter values (`''` -> `'`).
 
+Document type lookups return `_rpa_scheme_value`, `_rpa_subject_value`,
+`_rpa_teamrouting_value` and `rpa_documenttypesid`. Each value is a UUID derived
+deterministically from the document type, so repeated lookups return the same ids.
+
 Lookup responses use an OData-like envelope:
 
 ```json
@@ -103,7 +107,7 @@ curl -s "http://localhost:3001/api/data/v9.2/contacts?\$select=contactid&\$filte
 
 curl -s "http://localhost:3001/api/data/v9.2/accounts?\$select=accountid&\$filter=rpa_sbinumber%20eq%20%27123456789%27"
 
-curl -s "http://localhost:3001/api/data/v9.2/rpa_documenttypeses?\$select=_rpa_scheme_value,_rpa_subject_value,rpa_documenttypesid&\$filter=rpa_documenttype%20eq%20%27Common%20Licence%27"
+curl -s "http://localhost:3001/api/data/v9.2/rpa_documenttypeses?\$select=_rpa_scheme_value,_rpa_subject_value,_rpa_teamrouting_value,rpa_documenttypesid&\$filter=rpa_documenttype%20eq%20%27Common%20Licence%27"
 ```
 
 ### CRM Incident Endpoints
