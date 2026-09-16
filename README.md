@@ -20,6 +20,12 @@ Run locally in Docker:
 npm run docker:dev
 ```
 
+Run locally in Docker, also attached to the `fcp-sfd` network used by `fcp-sfd-crm` (see [Running alongside fcp-sfd-crm in Docker](#running-alongside-fcp-sfd-crm-in-docker)):
+
+```bash
+npm run docker:dev:link
+```
+
 Run full lint + tests in Docker (CI-equivalent):
 
 ```bash
@@ -46,6 +52,16 @@ Set these values in the `fcp-sfd-crm` environment, where `<host>` is the host na
 | `CRM_AUTH_SCOPE` | any non-empty value |
 
 `CRM_AUTH_FEDERATED_DISABLED=true` makes `fcp-sfd-crm` use the client secret flow, which is the only token flow the stub implements.
+
+### Running alongside fcp-sfd-crm in Docker
+
+`npm run docker:dev` attaches the stub to its own `cdp-tenant` network only, so a `fcp-sfd-crm` container cannot reach it by name. To run both in Docker:
+
+1. Start `fcp-sfd-crm` with `npm run docker:dev` in that repository. Its compose project creates the `fcp-sfd` network.
+2. Start the stub with `npm run docker:dev:link`. This applies `compose.link.yml` on top of `compose.yml`, which attaches the stub to the existing `fcp-sfd` network as well as `cdp-tenant`, with the alias `fcp-sfd-crm-stub`.
+3. In the `fcp-sfd-crm` environment, use `fcp-sfd-crm-stub` as `<host>` in the values above, for example `CRM_API_BASE_URL=http://fcp-sfd-crm-stub:3001/api/data/v9.2`.
+
+If the `fcp-sfd` network does not exist, `npm run docker:dev:link` fails; `compose.link.yml` declares the network as external and does not create it. The stub remains reachable from the host at `http://localhost:3001` either way.
 
 The flow `fcp-sfd-crm` follows against the stub is:
 

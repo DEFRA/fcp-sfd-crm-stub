@@ -1,0 +1,17 @@
+# Link override: runs the stub in the named fcp-sfd Docker network, as well as
+# its default network, so services composed from other repositories (such as
+# fcp-sfd-crm) can reach it at http://fcp-sfd-crm-stub:3001. The network is
+# declared external and is not created here: start fcp-sfd-crm first, whose
+# compose project creates it.
+services:
+  fcp-sfd-crm-stub:
+    networks:
+      cdp-tenant:
+      fcp-sfd:
+        aliases:
+          - fcp-sfd-crm-stub
+
+networks:
+  fcp-sfd:
+    external: true
+    name: fcp-sfd
