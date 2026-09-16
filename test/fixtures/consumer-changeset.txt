@@ -1,0 +1,39 @@
+--batch_0f0f0f0f-0000-4000-8000-000000000001
+Content-Type: multipart/mixed;boundary=changeset_0f0f0f0f-0000-4000-8000-000000000002
+
+--changeset_0f0f0f0f-0000-4000-8000-000000000002
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+Content-ID: 1
+
+PATCH http://fcp-sfd-crm-stub:3001/api/data/v9.2/incidents(11111111-1111-4111-8111-111111111111) HTTP/1.1
+Content-Type: application/json
+If-None-Match: *
+
+{"title":"Document Upload - SBI 123456789","description":"Stub fixture case","caseorigincode":100000002,"prioritycode":2,"customerid_contact@odata.bind":"/contacts(44444444-4444-4444-8444-444444444444)","rpa_Contact@odata.bind":"/contacts(44444444-4444-4444-8444-444444444444)","rpa_Organisation@odata.bind":"/accounts(55555555-5555-4555-8555-555555555555)","rpa_Scheme@odata.bind":"/rpa_schemes(66666666-6666-4666-8666-666666666666)","subjectid@odata.bind":"/subjects(77777777-7777-4777-8777-777777777777)","ownerid@odata.bind":"/teams(88888888-8888-4888-8888-888888888888)","rpa_isunknowncontact":false,"rpa_isunknownorganisation":false}
+
+--changeset_0f0f0f0f-0000-4000-8000-000000000002
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+Content-ID: 2
+
+PATCH http://fcp-sfd-crm-stub:3001/api/data/v9.2/rpa_onlinesubmissions(22222222-2222-4222-8222-222222222222) HTTP/1.1
+Content-Type: application/json
+If-None-Match: *
+
+{"subject":"Document Upload","description":"Stub fixture online submission","scheduledstart":"2026-01-01T00:00:00.000Z","scheduledend":"2026-01-01T00:00:00.000Z","rpa_onlinesubmissiondate":"2026-01-01T00:00:00.000Z","rpa_onlinesubmissionid":"0123456789abcdef0123","statecode":1,"statuscode":2,"rpa_SubmissionType_rpa_onlinesubmission@odata.bind":"/rpa_documenttypeses(99999999-9999-4999-8999-999999999999)","ownerid@odata.bind":"/teams(88888888-8888-4888-8888-888888888888)","regardingobjectid_incident_rpa_onlinesubmission@odata.bind":"/incidents(11111111-1111-4111-8111-111111111111)"}
+
+--changeset_0f0f0f0f-0000-4000-8000-000000000002
+Content-Type: application/http
+Content-Transfer-Encoding: binary
+Content-ID: 3
+
+PATCH http://fcp-sfd-crm-stub:3001/api/data/v9.2/rpa_activitymetadatas(33333333-3333-4333-8333-333333333333) HTTP/1.1
+Content-Type: application/json
+If-None-Match: *
+
+{"rpa_name":"fixture.pdf","rpa_blobfileid":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","rpa_DocumentTypeMetaId@odata.bind":"/rpa_documenttypeses(99999999-9999-4999-8999-999999999999)","rpa_RelatedOnlineSubmissionId@odata.bind":"/rpa_onlinesubmissions(22222222-2222-4222-8222-222222222222)","rpa_filemimetype":"application/pdf"}
+
+--changeset_0f0f0f0f-0000-4000-8000-000000000002--
+
+--batch_0f0f0f0f-0000-4000-8000-000000000001--
