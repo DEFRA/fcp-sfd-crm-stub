@@ -2,6 +2,7 @@ import Joi from 'joi'
 import { deterministicUuid } from '#/utils/deterministic-uuid.js'
 import { parseEqFilter, parseSelect, pickSelected } from '#/utils/odata.js'
 import { recordRequest } from '#/common/helpers/record-request.js'
+import { WEB_API_PATH } from '#/utils/web-api.js'
 
 const HTTP_STATUS_OK = 200
 
@@ -46,7 +47,7 @@ const getDocumentTypeRecord = (query) =>
 
 export const contactsGet = {
   method: 'GET',
-  path: '/api/data/v9.2/contacts',
+  path: `${WEB_API_PATH}/contacts`,
   options: {
     validate: {
       query: querySchema
@@ -62,7 +63,7 @@ export const contactsGet = {
 
 export const accountsGet = {
   method: 'GET',
-  path: '/api/data/v9.2/accounts',
+  path: `${WEB_API_PATH}/accounts`,
   options: {
     validate: {
       query: querySchema
@@ -78,7 +79,7 @@ export const accountsGet = {
 
 export const documentTypesGet = {
   method: 'GET',
-  path: '/api/data/v9.2/rpa_documenttypeses',
+  path: `${WEB_API_PATH}/rpa_documenttypeses`,
   options: {
     validate: {
       query: querySchema

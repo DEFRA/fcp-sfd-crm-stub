@@ -8,8 +8,8 @@ import {
   buildBatchResponse,
   parseChangesetRequest
 } from '#/utils/odata-batch.js'
+import { WEB_API_PATH } from '#/utils/web-api.js'
 
-const WEB_API_PATH = '/api/data/v9.2'
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NO_CONTENT = 204
 const HTTP_STATUS_BAD_REQUEST = 400
