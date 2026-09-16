@@ -194,6 +194,17 @@ describe('#odata-batch', () => {
       expect(result.parts).toHaveLength(1)
     })
 
+    test('parses an entity set name containing digits, so the route decides whether it is supported', () => {
+      const result = parseChangesetRequest(
+        'multipart/mixed;boundary=batch_b',
+        buildBatchBody([
+          { requestLine: patchLine(`/api/data/v9.2/rpa_set2s(${CASE_ID})`) }
+        ])
+      )
+
+      expect(result.parts[0].entitySet).toBe('rpa_set2s')
+    })
+
     test('returns invalid_json when a part body is not valid JSON', () => {
       const brokenFixture = fixture.replace('{"rpa_name":', '{rpa_name:')
 

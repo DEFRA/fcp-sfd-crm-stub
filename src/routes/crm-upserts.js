@@ -5,14 +5,16 @@ import {
   hasEntity,
   upsertEntity
 } from '#/store/entities.js'
-import { buildStubErrorBody } from '#/utils/odata-batch.js'
+import {
+  ODATA_ERROR_CONTENT_TYPE,
+  buildStubErrorBody
+} from '#/utils/odata-error.js'
+import { WEB_API_PATH } from '#/utils/web-api.js'
 
-const WEB_API_PATH = '/api/data/v9.2'
 const HTTP_STATUS_NO_CONTENT = 204
 const HTTP_STATUS_PRECONDITION_FAILED = 412
 const IF_NONE_MATCH_ANY = '*'
 const ODATA_VERSION = '4.0'
-const ODATA_ERROR_CONTENT_TYPE = 'application/json; odata.metadata=minimal'
 
 const headersSchema = Joi.object({
   'if-none-match': Joi.string().valid(IF_NONE_MATCH_ANY),

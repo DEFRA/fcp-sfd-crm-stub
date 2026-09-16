@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { createServer } from '../../../src/server.js'
-import { resetIncidents } from '../../../src/store/incidents.js'
+import { resetEntities } from '../../../src/store/entities.js'
 
 describe('#crm-incidents', () => {
   let server
@@ -12,7 +12,7 @@ describe('#crm-incidents', () => {
   })
 
   beforeEach(() => {
-    resetIncidents()
+    resetEntities()
   })
 
   afterAll(async () => {
@@ -230,7 +230,7 @@ describe('#crm-incidents read-through of PATCH-created records', () => {
   })
 
   beforeEach(() => {
-    resetIncidents()
+    resetEntities()
   })
 
   afterAll(async () => {

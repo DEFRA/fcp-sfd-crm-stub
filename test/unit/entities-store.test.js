@@ -182,6 +182,38 @@ describe('#entities-store', () => {
     test('commits nothing and reports success for an empty set of writes', () => {
       expect(commitConditionalCreates([])).toEqual({ committed: true })
     })
+
+    test('refuses writes that exceed the per-set limit rather than evicting its own records', () => {
+      config.set('incidentStore.maxSize', 2)
+
+      expect(() =>
+        commitConditionalCreates([
+          { entitySet: 'incidents', id: 'case-1', body: {} },
+          { entitySet: 'incidents', id: 'case-2', body: {} },
+          { entitySet: 'incidents', id: 'case-3', body: {} }
+        ])
+      ).toThrow(
+        "Changeset writes 3 records to 'incidents', above the per-set limit of 2"
+      )
+      expect(hasEntity('incidents', 'case-1')).toBe(false)
+      expect(hasEntity('incidents', 'case-2')).toBe(false)
+      expect(hasEntity('incidents', 'case-3')).toBe(false)
+    })
+
+    test('counts the limit per entity set, not across the changeset', () => {
+      config.set('incidentStore.maxSize', 2)
+
+      const result = commitConditionalCreates([
+        { entitySet: 'incidents', id: 'case-1', body: {} },
+        { entitySet: 'incidents', id: 'case-2', body: {} },
+        { entitySet: 'rpa_onlinesubmissions', id: 'submission-1', body: {} },
+        { entitySet: 'rpa_onlinesubmissions', id: 'submission-2', body: {} }
+      ])
+
+      expect(result).toEqual({ committed: true })
+      expect(hasEntity('incidents', 'case-1')).toBe(true)
+      expect(hasEntity('rpa_onlinesubmissions', 'submission-1')).toBe(true)
+    })
   })
 
   describe('#findEntities', () => {
@@ -239,13 +271,14 @@ describe('#entities-store', () => {
       expect(findEntities('rpa_onlinesubmissions', () => true)).toHaveLength(2)
     })
 
-    test('evicts overflow records after a conditional commit', () => {
+    test('evicts records written before a conditional commit, not by it', () => {
       config.set('incidentStore.maxSize', 2)
       config.set('incidentStore.maxAgeMinutes', 0)
 
+      upsertEntity('incidents', 'case-1', {})
+      upsertEntity('incidents', 'case-2', {})
+
       commitConditionalCreates([
-        { entitySet: 'incidents', id: 'case-1', body: {} },
-        { entitySet: 'incidents', id: 'case-2', body: {} },
         { entitySet: 'incidents', id: 'case-3', body: {} }
       ])
 

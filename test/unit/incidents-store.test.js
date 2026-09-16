@@ -1,20 +1,21 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { config } from '../../src/config.js'
-import { createIncident, getIncidentById, resetIncidents } from '../../src/store/incidents.js'
+import { createIncident, getIncidentById } from '../../src/store/incidents.js'
+import { resetEntities } from '../../src/store/entities.js'
 
 describe('#incidents-store', () => {
   const originalMaxSize = config.get('incidentStore.maxSize')
   const originalMaxAgeMinutes = config.get('incidentStore.maxAgeMinutes')
 
   beforeEach(() => {
-    resetIncidents()
+    resetEntities()
     config.set('incidentStore.maxSize', originalMaxSize)
     config.set('incidentStore.maxAgeMinutes', originalMaxAgeMinutes)
     vi.useRealTimers()
   })
 
   afterEach(() => {
-    resetIncidents()
+    resetEntities()
     config.set('incidentStore.maxSize', originalMaxSize)
     config.set('incidentStore.maxAgeMinutes', originalMaxAgeMinutes)
     vi.useRealTimers()

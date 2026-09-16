@@ -3,6 +3,7 @@ import Joi from 'joi'
 import { parseSelect, pickSelected } from '#/utils/odata.js'
 import { createIncident, getIncidentById } from '#/store/incidents.js'
 import { recordRequest } from '#/common/helpers/record-request.js'
+import { WEB_API_PATH } from '#/utils/web-api.js'
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NOT_FOUND = 404
@@ -69,7 +70,7 @@ const buildIncidentResponse = (incident, query) => {
 
 export const incidentsPost = {
   method: 'POST',
-  path: '/api/data/v9.2/incidents',
+  path: `${WEB_API_PATH}/incidents`,
   options: {
     validate: {
       payload: postPayloadSchema
@@ -85,7 +86,7 @@ export const incidentsPost = {
 
 export const incidentsGet = {
   method: 'GET',
-  path: '/api/data/v9.2/incidents({incidentid})',
+  path: `${WEB_API_PATH}/incidents({incidentid})`,
   options: {
     validate: {
       query: getQuerySchema,

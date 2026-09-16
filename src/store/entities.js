@@ -103,6 +103,27 @@ function findFirstConflictIndex(writes) {
   })
 }
 
+// Eviction runs after the writes and cannot tell which records the current
+// changeset wrote, so a changeset larger than the per-set limit would evict its
+// own earlier parts while reporting a full commit. Refuse it instead, so the
+// misconfiguration is visible rather than corrupting the all-or-nothing
+// guarantee the consumer depends on.
+function assertWritesFitPerSetLimit(writes) {
+  const maxSize = getMaxSize()
+  const countPerSet = new Map()
+  for (const { entitySet } of writes) {
+    countPerSet.set(entitySet, (countPerSet.get(entitySet) ?? 0) + 1)
+  }
+
+  for (const [entitySet, count] of countPerSet) {
+    if (count > maxSize) {
+      throw new Error(
+        `Changeset writes ${count} records to '${entitySet}', above the per-set limit of ${maxSize}`
+      )
+    }
+  }
+}
+
 /**
  * Creates every record only if none of them already exists and no id repeats
  * within the writes; otherwise creates nothing and reports the first conflict.
@@ -110,8 +131,12 @@ function findFirstConflictIndex(writes) {
  * interleave between them.
  * @param {Array<{ entitySet: string, id: string, body: object }>} writes
  * @returns {{ committed: true } | { committed: false, failedIndex: number, status: number }}
+ * @throws {Error} when the writes exceed the retained records allowed for one
+ * entity set, which would make the commit evict its own records
  */
 export function commitConditionalCreates(writes) {
+  assertWritesFitPerSetLimit(writes)
+
   const failedIndex = findFirstConflictIndex(writes)
   if (failedIndex !== -1) {
     return { committed: false, failedIndex, status: PRECONDITION_FAILED_STATUS }
