@@ -1,4 +1,5 @@
 import { getAll, reset } from '#/store/request-history.js'
+import { resetEntities } from '#/store/entities.js'
 
 const HTTP_STATUS_OK = 200
 const HTTP_STATUS_NO_CONTENT = 204
@@ -14,6 +15,7 @@ export const resetPost = {
   path: '/stub/reset',
   handler: (_request, h) => {
     reset()
+    resetEntities()
     return h.response().code(HTTP_STATUS_NO_CONTENT)
   }
 }

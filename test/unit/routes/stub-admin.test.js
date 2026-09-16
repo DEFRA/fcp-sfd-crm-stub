@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { createServer } from '../../../src/server.js'
 import { reset as resetRequestHistory } from '../../../src/store/request-history.js'
 import { resetIncidents } from '../../../src/store/incidents.js'
+import { hasEntity } from '../../../src/store/entities.js'
 
 describe('#stub-admin', () => {
   let server
@@ -72,6 +73,38 @@ describe('#stub-admin', () => {
       responseStatus: 200
     })
     expect(payload[1].timestamp).toEqual(expect.any(String))
+  })
+
+  test('reset clears entity records as well as request history', async () => {
+    await server.inject({
+      method: 'PATCH',
+      url: '/api/data/v9.2/incidents(11111111-1111-4111-8111-111111111111)',
+      payload: { title: 'Case' },
+      headers: { 'if-none-match': '*' }
+    })
+    await server.inject({
+      method: 'PATCH',
+      url: '/api/data/v9.2/rpa_activitymetadatas(33333333-3333-4333-8333-333333333333)',
+      payload: { rpa_name: 'file.pdf' },
+      headers: { 'if-none-match': '*' }
+    })
+
+    const resetResponse = await server.inject({
+      method: 'POST',
+      url: '/stub/reset'
+    })
+
+    expect(resetResponse.statusCode).toBe(204)
+    expect(hasEntity('incidents', '11111111-1111-4111-8111-111111111111')).toBe(false)
+    expect(hasEntity('rpa_activitymetadatas', '33333333-3333-4333-8333-333333333333')).toBe(false)
+
+    const repeatResponse = await server.inject({
+      method: 'PATCH',
+      url: '/api/data/v9.2/incidents(11111111-1111-4111-8111-111111111111)',
+      payload: { title: 'Case' },
+      headers: { 'if-none-match': '*' }
+    })
+    expect(repeatResponse.statusCode).toBe(204)
   })
 
   test('reset clears request history and returns 204', async () => {
