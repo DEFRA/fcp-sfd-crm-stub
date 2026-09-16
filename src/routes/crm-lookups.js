@@ -40,6 +40,7 @@ const getDocumentTypeRecord = (query) =>
   buildRecord(query, 'rpa_documenttype', (documentType) => ({
     _rpa_scheme_value: deterministicUuid(`scheme:${documentType}`),
     _rpa_subject_value: deterministicUuid(`subject:${documentType}`),
+    _rpa_teamrouting_value: deterministicUuid(`team-routing:${documentType}`),
     rpa_documenttypesid: deterministicUuid(`document-type:${documentType}`)
   }))
 

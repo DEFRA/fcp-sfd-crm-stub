@@ -57,6 +57,23 @@ describe('#crm-lookups', () => {
     })
   })
 
+  test('returns team routing with document metadata for the consumer select', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: "/api/data/v9.2/rpa_documenttypeses?$select=_rpa_scheme_value,_rpa_subject_value,_rpa_teamrouting_value,rpa_documenttypesid&$filter=rpa_documenttype eq 'Common Licence'"
+    })
+
+    expect(response.statusCode).toBe(200)
+    const payload = JSON.parse(response.payload)
+    expect(payload.value).toHaveLength(1)
+    expect(payload.value[0]).toEqual({
+      _rpa_scheme_value: expect.any(String),
+      _rpa_subject_value: expect.any(String),
+      _rpa_teamrouting_value: expect.any(String),
+      rpa_documenttypesid: expect.any(String)
+    })
+  })
+
   test('supports escaped single quotes in document type filter', async () => {
     const response = await server.inject({
       method: 'GET',
