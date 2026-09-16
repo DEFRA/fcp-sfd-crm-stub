@@ -6,6 +6,15 @@ convict.addFormats(convictFormatWithValidator)
 const isProduction = process.env.NODE_ENV === 'production'
 const isTest = process.env.NODE_ENV === 'test'
 
+// A store size of 0 would evict every record as soon as it was written, so
+// conditional creates would never conflict and duplicate suppression would
+// silently stop working. Fail at boot instead.
+const positiveInteger = (value) => {
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error('must be an integer of 1 or more')
+  }
+}
+
 export const config = convict({
   serviceVersion: {
     doc: 'The service version, this variable is injected into your docker container in CDP environments',
@@ -104,13 +113,13 @@ export const config = convict({
   },
   incidentStore: {
     maxSize: {
-      doc: 'Maximum number of incidents retained in memory',
-      format: 'nat',
+      doc: 'Maximum number of records retained in memory per entity set (minimum 1)',
+      format: positiveInteger,
       default: 1000,
       env: 'INCIDENT_STORE_MAX_SIZE'
     },
     maxAgeMinutes: {
-      doc: 'Maximum age in minutes for incidents retained in memory (0 disables age-based expiry)',
+      doc: 'Maximum age in minutes for records retained in memory per entity set (0 disables age-based expiry)',
       format: 'nat',
       default: 0,
       env: 'INCIDENT_STORE_MAX_AGE_MINUTES'
