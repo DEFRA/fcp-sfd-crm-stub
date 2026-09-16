@@ -42,14 +42,14 @@ npm run docker:test:watch
 
 Set these values in the `fcp-sfd-crm` environment, where `<host>` is the host name at which `fcp-sfd-crm` can reach this stub:
 
-| Variable | Value |
-|----------|-------|
-| `CRM_API_BASE_URL` | `http://<host>:3001/api/data/v9.2` |
-| `CRM_AUTH_ENDPOINT` | `http://<host>:3001/oauth2/v2.0/token` |
-| `CRM_AUTH_FEDERATED_DISABLED` | `true` |
-| `CRM_AUTH_CLIENT_ID` | any non-empty value |
-| `CRM_AUTH_CLIENT_SECRET` | any non-empty value |
-| `CRM_AUTH_SCOPE` | any non-empty value |
+| Variable                      | Value                                  |
+| ----------------------------- | -------------------------------------- |
+| `CRM_API_BASE_URL`            | `http://<host>:3001/api/data/v9.2`     |
+| `CRM_AUTH_ENDPOINT`           | `http://<host>:3001/oauth2/v2.0/token` |
+| `CRM_AUTH_FEDERATED_DISABLED` | `true`                                 |
+| `CRM_AUTH_CLIENT_ID`          | any non-empty value                    |
+| `CRM_AUTH_CLIENT_SECRET`      | any non-empty value                    |
+| `CRM_AUTH_SCOPE`              | any non-empty value                    |
 
 `CRM_AUTH_FEDERATED_DISABLED=true` makes `fcp-sfd-crm` use the client secret flow, which is the only token flow the stub implements.
 
@@ -78,8 +78,8 @@ The flow `fcp-sfd-crm` follows against the stub is:
 
 ### Health
 
-| Method | Endpoint  | Description |
-|--------|-----------|-------------|
+| Method | Endpoint  | Description  |
+| ------ | --------- | ------------ |
 | `GET`  | `/health` | Health check |
 
 Response:
@@ -90,8 +90,8 @@ Response:
 
 ### OAuth Token Endpoint
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
+| Method | Endpoint             | Purpose                                                    |
+| ------ | -------------------- | ---------------------------------------------------------- |
 | `POST` | `/oauth2/v2.0/token` | Return a stub access token for the client credentials flow |
 
 The endpoint accepts an `application/x-www-form-urlencoded` request containing
@@ -109,11 +109,11 @@ Response:
 
 ### CRM Lookup Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `GET` | `/api/data/v9.2/contacts` | Contact lookup by CRN |
-| `GET` | `/api/data/v9.2/accounts` | Account lookup by SBI |
-| `GET` | `/api/data/v9.2/rpa_documenttypeses` | Document type metadata lookup |
+| Method | Endpoint                             | Purpose                       |
+| ------ | ------------------------------------ | ----------------------------- |
+| `GET`  | `/api/data/v9.2/contacts`            | Contact lookup by CRN         |
+| `GET`  | `/api/data/v9.2/accounts`            | Account lookup by SBI         |
+| `GET`  | `/api/data/v9.2/rpa_documenttypeses` | Document type metadata lookup |
 
 #### Supported query parameters
 
@@ -156,10 +156,10 @@ curl -s "http://localhost:3001/api/data/v9.2/rpa_documenttypeses?\$select=_rpa_s
 
 ### CRM Incident Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `POST` | `/api/data/v9.2/incidents` | Create an incident record (legacy) |
-| `GET` | `/api/data/v9.2/incidents({incidentid})` | Retrieve incident details |
+| Method | Endpoint                                 | Purpose                            |
+| ------ | ---------------------------------------- | ---------------------------------- |
+| `POST` | `/api/data/v9.2/incidents`               | Create an incident record (legacy) |
+| `GET`  | `/api/data/v9.2/incidents({incidentid})` | Retrieve incident details          |
 
 `POST /api/data/v9.2/incidents` is legacy. `fcp-sfd-crm` no longer calls it, and creates cases with `$batch` instead. It still works, and stores the incident and each nested online submission as separate records, in the same way as the conditional upsert and `$batch` endpoints.
 
@@ -211,21 +211,21 @@ curl -s "http://localhost:3001/api/data/v9.2/incidents(<incidentid>)?\$select=in
 
 ### CRM Conditional Upsert Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `PATCH` | `/api/data/v9.2/incidents({id})` | Create or update an incident |
-| `PATCH` | `/api/data/v9.2/rpa_onlinesubmissions({id})` | Create or update an online submission |
-| `PATCH` | `/api/data/v9.2/rpa_activitymetadatas({id})` | Create or update a metadata record |
-| `PATCH` | `/api/data/v9.2/rpa_integrationinboundqueues({id})` | Create or update a triage record |
+| Method  | Endpoint                                            | Purpose                               |
+| ------- | --------------------------------------------------- | ------------------------------------- |
+| `PATCH` | `/api/data/v9.2/incidents({id})`                    | Create or update an incident          |
+| `PATCH` | `/api/data/v9.2/rpa_onlinesubmissions({id})`        | Create or update an online submission |
+| `PATCH` | `/api/data/v9.2/rpa_activitymetadatas({id})`        | Create or update a metadata record    |
+| `PATCH` | `/api/data/v9.2/rpa_integrationinboundqueues({id})` | Create or update a triage record      |
 
 The request body must be a JSON object. It is stored as received. `@odata.bind` values are stored verbatim and not checked against any other record.
 
-| Request | Record | Response |
-|---------|--------|----------|
-| `If-None-Match: *` | does not exist | `204`, record created |
-| `If-None-Match: *` | exists | `412` with a JSON error body, record unchanged |
-| no `If-None-Match` | does not exist | `204`, record created |
-| no `If-None-Match` | exists | `204`, body shallow merged into the record |
+| Request            | Record         | Response                                       |
+| ------------------ | -------------- | ---------------------------------------------- |
+| `If-None-Match: *` | does not exist | `204`, record created                          |
+| `If-None-Match: *` | exists         | `412` with a JSON error body, record unchanged |
+| no `If-None-Match` | does not exist | `204`, record created                          |
+| no `If-None-Match` | exists         | `204`, body shallow merged into the record     |
 
 Successful responses carry `OData-EntityId: <origin>/api/data/v9.2/<entitySet>(<id>)`.
 
@@ -242,8 +242,8 @@ curl -i -X PATCH "http://localhost:3001/api/data/v9.2/rpa_activitymetadatas(3333
 
 ### CRM Batch Endpoint
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
+| Method | Endpoint                | Purpose                                          |
+| ------ | ----------------------- | ------------------------------------------------ |
 | `POST` | `/api/data/v9.2/$batch` | Create several records together in one changeset |
 
 #### Request
@@ -279,16 +279,18 @@ A changeset holds at most 1000 parts.
 
 #### Response
 
-| Case | Status | Body |
-|------|--------|------|
-| No record exists | `200` | One `204 No Content` part per request part, each with `Content-ID` and `OData-EntityId` |
-| Any record already exists | `412` | Only the first failing part, as `412 Precondition Failed` with a JSON error body. No record is created or changed |
-| No parts found, for example a body framed with bare LF | `200` | An empty batch response |
-| A part breaks a rule above, or the body cannot be parsed | `400` | JSON error naming the problem. No record is created |
+| Case                                                     | Status | Body                                                                                                              |
+| -------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------- |
+| No record exists                                         | `200`  | One `204 No Content` part per request part, each with `Content-ID` and `OData-EntityId`                           |
+| Any record already exists                                | `412`  | Only the first failing part, as `412 Precondition Failed` with a JSON error body. No record is created or changed |
+| No parts found, for example a body framed with bare LF   | `200`  | An empty batch response                                                                                           |
+| A part breaks a rule above, or the body cannot be parsed | `400`  | JSON error naming the problem. No record is created                                                               |
 
 Response boundaries are named `batchresponse_<uuid>` and `changesetresponse_<uuid>`, as `parseBatchResponse` in `fcp-sfd-crm` expects. `fcp-sfd-crm` treats an empty batch response as a failure, not as success.
 
 All records in a changeset are created, or none is.
+
+A changeset that addresses the same record twice is refused with an outer `412` naming the repeated part, even when neither write would have conflicted with a stored record. Whether Dataverse does the same is not confirmed; see [Known differences from Dataverse](#known-differences-from-dataverse).
 
 #### Keeping the stub in step with fcp-sfd-crm
 
@@ -296,10 +298,10 @@ All records in a changeset are created, or none is.
 
 ### Stub Admin Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `GET` | `/stub/requests` | Return request history |
-| `POST` | `/stub/reset` | Clear request history and all stored records |
+| Method | Endpoint         | Purpose                                      |
+| ------ | ---------------- | -------------------------------------------- |
+| `GET`  | `/stub/requests` | Return request history                       |
+| `POST` | `/stub/reset`    | Clear request history and all stored records |
 
 History entry schema:
 
@@ -342,6 +344,8 @@ Part header names are lower case. A part the response does not report on, such a
 
 Requests refused before reaching a handler, such as `400` validation failures on the upsert endpoints, `404` for unknown routes and `415` for `$batch`, are not recorded. The token endpoint does not record requests.
 
+`GET /stub/requests` is unauthenticated, as is every other endpoint, and returns request bodies verbatim. A `$batch` entry therefore holds the whole case payload, including the case title, which in `fcp-sfd-crm` messages contains an SBI. Send the stub synthetic data only. It must not be pointed at anything derived from real customer data.
+
 Reset returns `204 No Content`. It clears request history and every stored record, including incidents, online submissions, metadata and triage records. Record ids sent by `fcp-sfd-crm` are derived from the message `correlationId`, so a test that reuses a message after a reset starts from an empty stub rather than meeting `412`.
 
 #### Examples
@@ -372,7 +376,9 @@ Despite their names, both settings apply to each entity set separately: `inciden
 
 Behavior:
 
+- `INCIDENT_STORE_MAX_SIZE` must be 1 or more. The service refuses to start on `0`, which would evict every record as it was written and make conditional creates never conflict.
 - Max-size eviction is FIFO within each entity set (oldest records removed first). Updating a record does not change its position.
+- A `$batch` changeset that would write more records to one entity set than the limit allows is refused rather than half-applied, because eviction cannot tell which records the changeset itself wrote.
 - Age-based expiry is disabled when `INCIDENT_STORE_MAX_AGE_MINUTES=0`.
 - When enabled (`>0`), records older than the configured age are purged when their entity set is read or written.
 - Because limits apply per entity set, an incident can be evicted while its online submission remains. At the default size this does not arise in normal test runs; call `POST /stub/reset` between suites.
@@ -381,15 +387,17 @@ Behavior:
 
 The following Dataverse behaviours are not confirmed by `fcp-sfd-crm`, its ADRs or any captured response. The stub takes the approach shown until each is confirmed. Do not treat the stub's behaviour here as evidence of how Dataverse behaves.
 
-| Question | Stub approach until confirmed |
-|----------|-------------------------------|
-| The exact body and `Content-Type` of an outer `412` `$batch` response, and whether a conflict on a part other than the first also produces an outer `412`. [`fcp-sfd-crm` ADR](https://eaflood.atlassian.net/wiki/spaces/SFD/pages/6576832627/fcp-sfd-crm+Use+a+Dataverse+batch+changeset+of+conditional+upserts+instead+of+a+deep+insert+for+case+creation) records an outer `412` only for an identical repeated changeset. | Outer `412` with a multipart body holding only the failing part, whichever part conflicts. |
-| The error `code` and `message` Dataverse returns for a conditional create conflict. | A JSON OData error with code `STUB_GENERATED_ERROR` and a message stating it was generated by the stub. `fcp-sfd-crm` only logs the text. |
-| Whether Dataverse accepts relative as well as absolute part URLs in a changeset. | Both are accepted. `fcp-sfd-crm` sends absolute URLs. |
-| Upsert semantics for `PATCH` without `If-None-Match`, believed to be create or update. `fcp-sfd-crm` never sends this. | Create, or shallow merge into the existing record, returning `204`. |
-| The maximum number of requests in one `$batch`, believed to be 1000 but not verified. | At most 1000 parts. |
-| The `OData-EntityId` value for a record addressed by a client-supplied key. | `<origin>/api/data/v9.2/<entitySet>(<id>)`. |
-| Whether an online submission created in a changeset is returned at once by the expanded incident `GET`. `fcp-sfd-crm` treats a miss as transient. | Returned at once; the delay path is not reproduced. |
+| Question                                                                                                                                                                                                                                                                                                                                                                                                                      | Stub approach until confirmed                                                                                                                                                                                                                                                |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The exact body and `Content-Type` of an outer `412` `$batch` response, and whether a conflict on a part other than the first also produces an outer `412`. [`fcp-sfd-crm` ADR](https://eaflood.atlassian.net/wiki/spaces/SFD/pages/6576832627/fcp-sfd-crm+Use+a+Dataverse+batch+changeset+of+conditional+upserts+instead+of+a+deep+insert+for+case+creation) records an outer `412` only for an identical repeated changeset. | Outer `412` with a multipart body holding only the failing part, whichever part conflicts.                                                                                                                                                                                   |
+| The error `code` and `message` Dataverse returns for a conditional create conflict.                                                                                                                                                                                                                                                                                                                                           | A JSON OData error with code `STUB_GENERATED_ERROR` and a message stating it was generated by the stub. `fcp-sfd-crm` only logs the text.                                                                                                                                    |
+| Whether Dataverse accepts relative as well as absolute part URLs in a changeset.                                                                                                                                                                                                                                                                                                                                              | Both are accepted. `fcp-sfd-crm` sends absolute URLs.                                                                                                                                                                                                                        |
+| Upsert semantics for `PATCH` without `If-None-Match`, believed to be create or update. `fcp-sfd-crm` never sends this.                                                                                                                                                                                                                                                                                                        | Create, or shallow merge into the existing record, returning `204`.                                                                                                                                                                                                          |
+| The maximum number of requests in one `$batch`, believed to be 1000 but not verified.                                                                                                                                                                                                                                                                                                                                         | At most 1000 parts.                                                                                                                                                                                                                                                          |
+| The `OData-EntityId` value for a record addressed by a client-supplied key.                                                                                                                                                                                                                                                                                                                                                   | `<origin>/api/data/v9.2/<entitySet>(<id>)`.                                                                                                                                                                                                                                  |
+| Whether an online submission created in a changeset is returned at once by the expanded incident `GET`. `fcp-sfd-crm` treats a miss as transient.                                                                                                                                                                                                                                                                             | Returned at once; the delay path is not reproduced.                                                                                                                                                                                                                          |
+| Whether Dataverse refuses a changeset that addresses the same record twice, or applies both writes. `fcp-sfd-crm` never sends this.                                                                                                                                                                                                                                                                                           | Outer `412` reporting the repeated part.                                                                                                                                                                                                                                     |
+| The error envelope Dataverse uses for rejections other than a conditional create conflict.                                                                                                                                                                                                                                                                                                                                    | Only `412` bodies are OData-shaped. Every other error (`400`, `404`, `415`) uses the hapi envelope, `{"statusCode":...,"error":...,"message":...}`, which Dataverse never emits. `fcp-sfd-crm` captures the body as text and logs it, so nothing depends on the shape today. |
 
 Other limitations:
 
@@ -397,6 +405,10 @@ Other limitations:
 - The stub cannot return `5xx`, `429` or slow responses, so retry and timeout behaviour cannot be exercised.
 - Only `incidents` can be read back through the Web API. Other entity sets can be written but not read; use `GET /stub/requests` to assert on what was sent.
 - `@odata.bind` values are not checked against other records.
+
+## Decision records
+
+- [Decision Records](https://eaflood.atlassian.net/wiki/spaces/SFD/pages/6370394134/Decision+Records) hold the five decisions taken bringing the stub to `$batch` changeset parity with `fcp-sfd-crm`: retention settings, reset scope, `$batch` request history shape, local networking and the malformed changeset body. Two of them are still awaiting sign-off from their owners.
 
 ## License
 
