@@ -1,11 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { deterministicUuid } from '#/utils/deterministic-uuid.js'
-import {
-  findEntities,
-  getEntity,
-  resetEntities,
-  upsertEntity
-} from '#/store/entities.js'
+import { findEntities, getEntity, upsertEntity } from '#/store/entities.js'
 
 const INCIDENTS = 'incidents'
 const ONLINE_SUBMISSIONS = 'rpa_onlinesubmissions'
@@ -88,11 +83,4 @@ export function getIncidentById(incidentid) {
     description: incident.body.description,
     incident_rpa_onlinesubmissions: findOnlineSubmissions(incidentid)
   }
-}
-
-/**
- * Removes every entity record, including incidents and online submissions.
- */
-export function resetIncidents() {
-  resetEntities()
 }

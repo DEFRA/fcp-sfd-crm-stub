@@ -1,8 +1,10 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import { createServer } from '../../../src/server.js'
 import { reset as resetRequestHistory } from '../../../src/store/request-history.js'
-import { resetIncidents } from '../../../src/store/incidents.js'
-import { hasEntity } from '../../../src/store/entities.js'
+import {
+  hasEntity,
+  resetEntities
+} from '../../../src/store/entities.js'
 
 describe('#stub-admin', () => {
   let server
@@ -14,7 +16,7 @@ describe('#stub-admin', () => {
 
   beforeEach(() => {
     resetRequestHistory()
-    resetIncidents()
+    resetEntities()
   })
 
   afterAll(async () => {
