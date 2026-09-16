@@ -1,67 +1,98 @@
 import { randomUUID } from 'node:crypto'
 import { deterministicUuid } from '#/utils/deterministic-uuid.js'
-import { config } from '#/config.js'
+import {
+  findEntities,
+  getEntity,
+  resetEntities,
+  upsertEntity
+} from '#/store/entities.js'
 
-const incidents = new Map()
+const INCIDENTS = 'incidents'
+const ONLINE_SUBMISSIONS = 'rpa_onlinesubmissions'
+const INCIDENT_BIND_FIELD =
+  'regardingobjectid_incident_rpa_onlinesubmission@odata.bind'
+const ODATA_BIND_SUFFIX = '@odata.bind'
 
-const getMaxSize = () => config.get('incidentStore.maxSize')
-const getMaxAgeMinutes = () => config.get('incidentStore.maxAgeMinutes')
+const incidentBindValue = (incidentid) => `/incidents(${incidentid})`
 
-function purgeExpiredIncidents(now) {
-  const maxAgeMinutes = getMaxAgeMinutes()
-  if (maxAgeMinutes === 0) {
-    return
-  }
-
-  const cutoff = now - (maxAgeMinutes * 60 * 1000)
-  for (const [incidentid, incident] of incidents.entries()) {
-    if (incident.createdAt < cutoff) {
-      incidents.delete(incidentid)
-    }
-  }
-}
-
-function evictOverflowIncidents() {
-  const maxSize = getMaxSize()
-  while (incidents.size > maxSize) {
-    const oldestIncidentId = incidents.keys().next().value
-    incidents.delete(oldestIncidentId)
-  }
-}
+const withoutBindAnnotations = (body) =>
+  Object.fromEntries(
+    Object.entries(body).filter(([key]) => !key.endsWith(ODATA_BIND_SUFFIX))
+  )
 
 const normalizeOnlineSubmissions = (incidentid, onlineSubmissions = []) =>
   onlineSubmissions.map((onlineSubmission, index) => ({
     ...onlineSubmission,
-    rpa_onlinesubmissionid: onlineSubmission.rpa_onlinesubmissionid ??
-      deterministicUuid(`${incidentid}:${index}:${onlineSubmission.subject ?? ''}`)
+    rpa_onlinesubmissionid:
+      onlineSubmission.rpa_onlinesubmissionid ??
+      deterministicUuid(
+        `${incidentid}:${index}:${onlineSubmission.subject ?? ''}`
+      )
   }))
 
-export function createIncident(payload) {
-  const now = Date.now()
-  purgeExpiredIncidents(now)
+// The only place an online submission is linked to its incident: by the
+// regarding-object bind value, however the online submission was created.
+const findOnlineSubmissions = (incidentid) =>
+  findEntities(
+    ONLINE_SUBMISSIONS,
+    (entity) =>
+      entity.body[INCIDENT_BIND_FIELD] === incidentBindValue(incidentid)
+  ).map((entity) => ({
+    ...withoutBindAnnotations(entity.body),
+    activityid: entity.id
+  }))
 
+/**
+ * Creates an incident and its nested online submissions as separate records
+ * in the entity store, linking each online submission to the incident.
+ * @param {{ title?: string, description?: string, incident_rpa_onlinesubmissions?: object[] }} payload
+ * @returns {object} the incident as returned by getIncidentById
+ */
+export function createIncident(payload) {
   const incidentid = randomUUID()
-  const incident = {
-    incidentid,
-    createdAt: now,
+  upsertEntity(INCIDENTS, incidentid, {
     title: payload.title ?? '',
-    description: payload.description ?? '',
-    incident_rpa_onlinesubmissions: normalizeOnlineSubmissions(
-      incidentid,
-      payload.incident_rpa_onlinesubmissions
-    )
+    description: payload.description ?? ''
+  })
+
+  const onlineSubmissions = normalizeOnlineSubmissions(
+    incidentid,
+    payload.incident_rpa_onlinesubmissions
+  )
+  for (const onlineSubmission of onlineSubmissions) {
+    upsertEntity(ONLINE_SUBMISSIONS, randomUUID(), {
+      ...onlineSubmission,
+      [INCIDENT_BIND_FIELD]: incidentBindValue(incidentid)
+    })
   }
 
-  incidents.set(incidentid, incident)
-  evictOverflowIncidents()
-  return incident
+  return getIncidentById(incidentid)
 }
 
+/**
+ * Returns an incident with its linked online submissions, each exposing its
+ * record id as `activityid`. `@odata.bind` annotations are not returned.
+ * @param {string} incidentid
+ * @returns {{ incidentid: string, createdAt: number, title?: string, description?: string, incident_rpa_onlinesubmissions: object[] } | null}
+ */
 export function getIncidentById(incidentid) {
-  purgeExpiredIncidents(Date.now())
-  return incidents.get(incidentid) ?? null
+  const incident = getEntity(INCIDENTS, incidentid)
+  if (!incident) {
+    return null
+  }
+
+  return {
+    incidentid,
+    createdAt: incident.createdAt,
+    title: incident.body.title,
+    description: incident.body.description,
+    incident_rpa_onlinesubmissions: findOnlineSubmissions(incidentid)
+  }
 }
 
+/**
+ * Removes every entity record, including incidents and online submissions.
+ */
 export function resetIncidents() {
-  incidents.clear()
+  resetEntities()
 }
