@@ -12,6 +12,7 @@
     "dev:debug": "NODE_ENV=development npm run server:debug",
     "docker:build": "docker compose build",
     "docker:dev": "docker compose up",
+    "docker:dev:link": "docker compose -f compose.yml -f compose.link.yml up",
     "format": "prettier --write \"**/*.{cjs,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{cjs,js,json,md}\"",
     "docker:test": "npm run lint && (mkdir -p coverage/.tmp 2>/dev/null || true) && docker compose -p fcp-sfd-crm-stub-test down -v && docker compose -f compose.yml -f compose.test.yml -p fcp-sfd-crm-stub-test run --build --rm fcp-sfd-crm-stub",
