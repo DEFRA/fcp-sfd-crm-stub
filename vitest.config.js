@@ -7,6 +7,12 @@ export default defineConfig({
     clearMocks: true,
     coverage: {
       provider: 'v8',
+      thresholds: {
+        statements: 90,
+        branches: 90,
+        functions: 90,
+        lines: 90
+      },
       reportsDirectory: './coverage',
       reporter: ['text', 'lcov'],
       include: ['src/**'],
