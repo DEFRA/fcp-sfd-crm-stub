@@ -1,7 +1,7 @@
 import Joi from 'joi'
 import { deterministicUuid } from '#/utils/deterministic-uuid.js'
 import { parseEqFilter, parseSelect, pickSelected } from '#/utils/odata.js'
-import { record } from '#/store/request-history.js'
+import { recordRequest } from '#/common/helpers/record-request.js'
 
 const HTTP_STATUS_OK = 200
 
@@ -90,13 +90,4 @@ export const documentTypesGet = {
     recordRequest(request, HTTP_STATUS_OK)
     return response
   }
-}
-
-function recordRequest(request, responseStatus) {
-  record({
-    method: request.method.toUpperCase(),
-    endpoint: request.path,
-    requestBody: request.payload ?? null,
-    responseStatus
-  })
 }
