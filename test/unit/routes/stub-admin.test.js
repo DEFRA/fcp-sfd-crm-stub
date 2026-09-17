@@ -130,4 +130,91 @@ describe('#stub-admin', () => {
     expect(historyResponse.statusCode).toBe(200)
     expect(JSON.parse(historyResponse.payload)).toEqual([])
   })
+
+  test('returns zero totals and null times when nothing has been recorded', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/stub/stats'
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(JSON.parse(response.payload)).toEqual({
+      total: 0,
+      firstRequestAt: null,
+      lastRequestAt: null,
+      byRoute: []
+    })
+  })
+
+  test('returns totals for recorded CRM requests grouped by route pattern', async () => {
+    await server.inject({
+      method: 'GET',
+      url: "/api/data/v9.2/contacts?$select=contactid&$filter=rpa_capcustomerid eq '2024001'"
+    })
+    await server.inject({
+      method: 'PATCH',
+      url: '/api/data/v9.2/incidents(11111111-1111-4111-8111-111111111111)',
+      payload: { title: 'Case' },
+      headers: { 'if-none-match': '*' }
+    })
+    await server.inject({
+      method: 'PATCH',
+      url: '/api/data/v9.2/incidents(22222222-2222-4222-8222-222222222222)',
+      payload: { title: 'Case' },
+      headers: { 'if-none-match': '*' }
+    })
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/stub/stats'
+    })
+
+    expect(response.statusCode).toBe(200)
+    const payload = JSON.parse(response.payload)
+
+    expect(payload.total).toBe(3)
+    expect(payload.firstRequestAt).toEqual(expect.any(String))
+    expect(payload.lastRequestAt).toEqual(expect.any(String))
+    expect(payload.byRoute).toEqual([
+      { method: 'GET', route: '/api/data/v9.2/contacts', status: 200, count: 1 },
+      { method: 'PATCH', route: '/api/data/v9.2/incidents({id})', status: 204, count: 2 }
+    ])
+  })
+
+  test('does not count requests to the admin endpoints', async () => {
+    await server.inject({ method: 'GET', url: '/stub/requests' })
+    await server.inject({ method: 'GET', url: '/stub/stats' })
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/stub/stats'
+    })
+
+    expect(JSON.parse(response.payload).total).toBe(0)
+  })
+
+  test('reset clears request totals', async () => {
+    await server.inject({
+      method: 'GET',
+      url: "/api/data/v9.2/accounts?$select=accountid&$filter=rpa_sbinumber eq '123456789'"
+    })
+
+    await server.inject({
+      method: 'POST',
+      url: '/stub/reset'
+    })
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/stub/stats'
+    })
+
+    expect(response.statusCode).toBe(200)
+    expect(JSON.parse(response.payload)).toEqual({
+      total: 0,
+      firstRequestAt: null,
+      lastRequestAt: null,
+      byRoute: []
+    })
+  })
 })

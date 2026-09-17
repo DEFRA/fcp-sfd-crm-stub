@@ -1,4 +1,4 @@
-import { getAll, reset } from '#/store/request-history.js'
+import { getAll, getStats, reset } from '#/store/request-history.js'
 import { resetEntities } from '#/store/entities.js'
 
 const HTTP_STATUS_OK = 200
@@ -8,6 +8,12 @@ export const requestsGet = {
   method: 'GET',
   path: '/stub/requests',
   handler: (_request, h) => h.response(getAll({ since: new Date(0) })).code(HTTP_STATUS_OK)
+}
+
+export const statsGet = {
+  method: 'GET',
+  path: '/stub/stats',
+  handler: (_request, h) => h.response(getStats()).code(HTTP_STATUS_OK)
 }
 
 export const resetPost = {
