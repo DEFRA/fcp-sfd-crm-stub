@@ -5,7 +5,10 @@ import {
   getEntity,
   resetEntities
 } from '../../../src/store/entities.js'
-import { reset as resetRequestHistory } from '../../../src/store/request-history.js'
+import {
+  getStats,
+  reset as resetRequestHistory
+} from '../../../src/store/request-history.js'
 
 const WEB_API_PATH = '/api/data/v9.2'
 const RECORD_ID = '33333333-3333-4333-8333-333333333333'
@@ -168,5 +171,21 @@ describe('#crm-upserts', () => {
       requestBody: { rpa_name: 'file.pdf' },
       responseStatus: 412
     })
+  })
+
+  test('counts PATCHes to different records under one route pattern', async () => {
+    const otherRecordId = '44444444-4444-4444-8444-444444444444'
+
+    await conditionalCreate(`${WEB_API_PATH}/incidents(${RECORD_ID})`, { title: 'Case' })
+    await conditionalCreate(`${WEB_API_PATH}/incidents(${otherRecordId})`, { title: 'Case' })
+
+    expect(getStats().byRoute).toEqual([
+      {
+        method: 'PATCH',
+        route: `${WEB_API_PATH}/incidents({id})`,
+        status: 204,
+        count: 2
+      }
+    ])
   })
 })

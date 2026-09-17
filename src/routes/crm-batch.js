@@ -58,6 +58,7 @@ function recordBatchRequest(request, parts, partStatus, responseStatus) {
   record({
     method: request.method.toUpperCase(),
     endpoint: request.path,
+    route: request.route.path,
     requestBody: parts
       ? {
           parts: parts.map((part, index) => ({

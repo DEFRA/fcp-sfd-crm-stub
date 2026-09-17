@@ -7,7 +7,10 @@ import {
   resetEntities,
   upsertEntity
 } from '../../../src/store/entities.js'
-import { reset as resetRequestHistory } from '../../../src/store/request-history.js'
+import {
+  getStats,
+  reset as resetRequestHistory
+} from '../../../src/store/request-history.js'
 
 const BATCH_URL = '/api/data/v9.2/$batch'
 const CRLF = '\r\n'
@@ -340,5 +343,15 @@ describe('#crm-batch', () => {
       requestBody: { parts: [] },
       responseStatus: 200
     })
+  })
+
+  test('counts each $batch request under its route with its outer status', async () => {
+    await postBatch(fixture)
+    await postBatch(fixture)
+
+    expect(getStats().byRoute).toEqual([
+      { method: 'POST', route: BATCH_URL, status: 200, count: 1 },
+      { method: 'POST', route: BATCH_URL, status: 412, count: 1 }
+    ])
   })
 })

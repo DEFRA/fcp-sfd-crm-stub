@@ -9,6 +9,7 @@ export function recordRequest(request, responseStatus) {
   record({
     method: request.method.toUpperCase(),
     endpoint: request.path,
+    route: request.route.path,
     requestBody: request.payload ?? null,
     responseStatus
   })

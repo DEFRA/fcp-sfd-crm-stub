@@ -298,10 +298,11 @@ A changeset that addresses the same record twice is refused with an outer `412` 
 
 ### Stub Admin Endpoints
 
-| Method | Endpoint         | Purpose                                      |
-| ------ | ---------------- | -------------------------------------------- |
-| `GET`  | `/stub/requests` | Return request history                       |
-| `POST` | `/stub/reset`    | Clear request history and all stored records |
+| Method | Endpoint         | Purpose                                                      |
+| ------ | ---------------- | ------------------------------------------------------------ |
+| `GET`  | `/stub/requests` | Return request history                                       |
+| `GET`  | `/stub/stats`    | Return request totals                                        |
+| `POST` | `/stub/reset`    | Clear request history, request totals and all stored records |
 
 History entry schema:
 
@@ -346,12 +347,31 @@ Requests refused before reaching a handler, such as `400` validation failures on
 
 `GET /stub/requests` is unauthenticated, as is every other endpoint, and returns request bodies verbatim. A `$batch` entry therefore holds the whole case payload, including the case title, which in `fcp-sfd-crm` messages contains an SBI. Send the stub synthetic data only. It must not be pointed at anything derived from real customer data.
 
-Reset returns `204 No Content`. It clears request history and every stored record, including incidents, online submissions, metadata and triage records. Record ids sent by `fcp-sfd-crm` are derived from the message `correlationId`, so a test that reuses a message after a reset starts from an empty stub rather than meeting `412`.
+Stats response schema:
+
+```json
+{
+  "total": 3,
+  "firstRequestAt": "ISO-8601",
+  "lastRequestAt": "ISO-8601",
+  "byRoute": [
+    { "method": "POST", "route": "/api/data/v9.2/$batch", "status": 200, "count": 2 },
+    { "method": "PATCH", "route": "/api/data/v9.2/incidents({id})", "status": 204, "count": 1 }
+  ]
+}
+```
+
+`GET /stub/stats` counts the same requests as request history, but is not limited by `REQUEST_HISTORY_MAX_SIZE`, so it suits load tests. Totals are grouped by method, route pattern and status, so requests to different records on one entity set share a line. A `$batch` request counts once, whatever parts it holds. Before any request is recorded, `total` is `0`, both times are `null` and `byRoute` is empty.
+
+Totals are held in memory by each stub instance from start up or the last reset. When more than one instance runs, each reports only its own requests, and a restart loses them. For a count across instances, use the stub's logs in OpenSearch.
+
+Reset returns `204 No Content`. It clears request history, request totals and every stored record, including incidents, online submissions, metadata and triage records. Record ids sent by `fcp-sfd-crm` are derived from the message `correlationId`, so a test that reuses a message after a reset starts from an empty stub rather than meeting `412`.
 
 #### Examples
 
 ```bash
 curl -s "http://localhost:3001/stub/requests" | jq
+curl -s "http://localhost:3001/stub/stats" | jq
 curl -i -X POST "http://localhost:3001/stub/reset"
 curl -s "http://localhost:3001/stub/requests" | jq
 ```
@@ -365,7 +385,7 @@ The service uses in-memory stores for request history and entity records.
 - `REQUEST_HISTORY_MAX_SIZE` (default: `1000`)
 - `REQUEST_HISTORY_WINDOW_MINUTES` (default: `10`)
 
-When history exceeds max size, oldest entries are evicted first.
+When history exceeds max size, oldest entries are evicted first. Request totals from `GET /stub/stats` are not evicted.
 
 ### Entity store
 
