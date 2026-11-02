@@ -25,7 +25,8 @@
     "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module",
     "start": "NODE_ENV=production node --use-strict .",
     "test": "rm -rf ./coverage/** && TZ=UTC vitest run --coverage",
-    "test:watch": "TZ=UTC vitest"
+    "test:watch": "TZ=UTC vitest",
+    "check:synthetic-ids": "sfd-id-check --staged"
   },
   "imports": {
     "#/*": "./src/*"
@@ -51,6 +52,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.10",
     "eslint": "9.39.2",
+    "fcp-sfd-core": "github:DEFRA/fcp-sfd-core#95f58ade56b2d0dd0f15bdcba6a5f37a54bcc939",
     "husky": "9.1.7",
     "neostandard": "0.13.0",
     "nodemon": "3.1.14",
