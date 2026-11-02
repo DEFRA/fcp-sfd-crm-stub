@@ -51,10 +51,10 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.10",
-    "eslint": "9.39.2",
+    "eslint": "10.13.0",
     "fcp-sfd-core": "github:DEFRA/fcp-sfd-core#95f58ade56b2d0dd0f15bdcba6a5f37a54bcc939",
     "husky": "9.1.7",
-    "neostandard": "0.13.0",
+    "neostandard": "0.14.1",
     "nodemon": "3.1.14",
     "npm-run-all": "4.1.5",
     "prettier": "3.9.6",
