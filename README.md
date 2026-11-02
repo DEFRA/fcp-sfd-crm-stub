@@ -430,6 +430,19 @@ Other limitations:
 
 - [Decision Records](https://eaflood.atlassian.net/wiki/spaces/SFD/pages/6370394134/Decision+Records) hold the five decisions taken bringing the stub to `$batch` changeset parity with `fcp-sfd-crm`: retention settings, reset scope, `$batch` request history shape, local networking and the malformed changeset body. Two of them are still awaiting sign-off from their owners.
 
+## Pre-commit hook
+
+A [Husky](https://typicode.github.io/husky/) pre-commit hook runs [`sfd-id-check`](https://github.com/DEFRA/fcp-sfd-core/tree/main/scripts/check-synthetic-ids), which blocks commits that add real-looking CRNs or SBIs. Pull requests run the same check.
+
+Enable the hook once per clone:
+
+```bash
+npm install
+npm run setup:husky
+```
+
+Use synthetic identifiers only: CRNs from `9000000000` to `9999999999` and SBIs from `800000000` to `899999999`. If a flagged number isn't a CRN or SBI, such as a timestamp, add `sfd-id-check: allow` in a comment on the same line, or list it in `.sfd-id-check-allow`. See the [`sfd-id-check` README](https://github.com/DEFRA/fcp-sfd-core/tree/main/scripts/check-synthetic-ids) for details.
+
 ## License
 
 This project is licensed under the Open Government Licence v3.
