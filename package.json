@@ -50,7 +50,7 @@
     "undici": "8.10.0"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "5.0.5",
     "eslint": "9.39.2",
     "fcp-sfd-core": "github:DEFRA/fcp-sfd-core#95f58ade56b2d0dd0f15bdcba6a5f37a54bcc939",
     "husky": "9.1.7",
@@ -58,7 +58,7 @@
     "nodemon": "3.1.14",
     "npm-run-all": "4.1.5",
     "prettier": "3.9.6",
-    "vitest": "4.1.10",
+    "vitest": "5.0.5",
     "vitest-fetch-mock": "0.4.5"
   }
 }
